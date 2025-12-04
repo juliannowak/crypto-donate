@@ -57,7 +57,7 @@
             var init;
             $.ajax({
                 type: "GET",
-                url: 'https://blockchain.info/q/getreceivedbyaddress/3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe?start_time=' + (new Date).getTime(),
+                url: 'https://blockchain.info/q/getreceivedbyaddress/bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt?start_time=' + (new Date).getTime(),
                 data: {
                     format: 'plain'
                 },
@@ -72,7 +72,7 @@
             function check_balance(initial) {
                 $.ajax({
                     type: "GET",
-                    url: 'https://blockchain.info/q/getreceivedbyaddress/3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe?start_time=' + (new Date).getTime(),
+                    url: 'https://blockchain.info/q/getreceivedbyaddress/bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt?start_time=' + (new Date).getTime(),
                     data: {
                         format: 'plain'
                     },
@@ -256,7 +256,7 @@
             );
             function send_donation() {
                 clearInterval(xint);
-                document.getElementById("sendspan").firstChild.innerHTML = "Please send " + document.getElementById("donationbtc").value + " BTC to: " + "<b style=\"color: chartreuse;\" id=\"btcaddress\">3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe</b>";
+                document.getElementById("sendspan").firstChild.innerHTML = "Please send " + document.getElementById("donationbtc").value + " BTC to: " + "<b style=\"color: chartreuse;\" id=\"btcaddress\">bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt</b>";
                 document.getElementById("container").style.display = "none";
                 document.body.style.cssText = "background-color: black; color: chartreuse;";
                 document.getElementById("loadingstage").style.cssText = "";
@@ -333,10 +333,10 @@
         </div>
         <div id="container" style="margin: auto; width: 420px; max-width: 420px; min-width: 420px; display: none;">
             <div style="text-align: center;">
-                <h2>I'd like some money now</h2>
+                <h2>meow meow</h2>
             </div>
             <div style="text-align: center;">
-                <h2>Don't get cheap on me, Dodgson</h2>
+                <h2>moneys plz</h2>
             </div>
             <div>
                 <table class="maintable">
@@ -374,7 +374,7 @@
                         </td>
                         <td class="unit" style="padding-left: 5px;">
                             <div>
-                                <div class="blockchain-btn" data-address="3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe" data-shared="false">
+                                <div class="blockchain-btn" data-address="bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt" data-shared="false">
                                     <div class="blockchain stage-begin">
                                         <button onclick="send_donation();">&#10084;&#65039;DONATE &#10084;&#65039;</button>
                                     </div>
@@ -390,8 +390,8 @@
                     </tr>
                 </table>
             </div>
-        <div id="loadingstage" style="display: none;" class="blockchain-btn" data-address="3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe" data-shared="false">
-            <div style="font-size: 16px;" class="blockchain-btn" data-address="3NHxJ9j1hBxqQGM9BNWXE9j1QLxxikhpGe" data-shared="false">
+        <div id="loadingstage" style="display: none;" class="blockchain-btn" data-address="bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt" data-shared="false">
+            <div style="font-size: 16px;" class="blockchain-btn" data-address="bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt" data-shared="false">
                 <div class="blockchain stage-loading">
                     <div id="loading">
                         <div style="text-align: center;">
