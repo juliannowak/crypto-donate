@@ -55,6 +55,7 @@
                 }
             }
             var init;
+            var eth_init;
             $.ajax({
                 type: "GET",
                 url: 'https://blockchain.info/q/getreceivedbyaddress/bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt?start_time=' + (new Date).getTime(),
@@ -68,7 +69,42 @@
                     init = parseInt(response);
                 }
             });
+            //TODO write a eth_balance and check_eth_balance ... etc
             var balance;
+            //TODO modularize to check_balance(token) and use dynamic variables for init + balance
+            function new_check_balance(token) {
+                console.log("checking " + token + " balance...");
+                if (token == "BTC") {
+                    $.ajax({
+                        type: "GET",
+                        url: 'https://blockchain.info/q/getreceivedbyaddress/bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt?start_time=' + (new Date).getTime(),
+                        data: {
+                            format: 'plain'
+                        },
+                        success: function(response) {
+                            if (!response) {
+                                return;
+                            }
+                            balance = parseInt(response);
+                            if (balance > init) {
+                                var inc = balance - init;
+                                document.getElementById("paid").innerHTML = '<span>Donation of <b style=\"color: white;\">' + inc + ' ' + token + '</b> Received. Thank You.</span>';
+                                document.getElementById("paid").style.cssText = "";
+                                document.getElementById("loadingstage").style.display = "none";
+                            } else {
+                                setTimeout(function() {
+                                    new_check_balance(token);
+                                }, 5000)
+                            }
+                        }
+                    });
+                } else if (token == "ETH") {
+                    //TODO check eth balance using etherscan api or similar
+                }
+                else {
+                    console.log("unsupported token for balance check: " + token);
+                }
+            }
             function check_balance(initial) {
                 $.ajax({
                     type: "GET",
@@ -182,8 +218,9 @@
             }
         </script>
         <script type="application/javascript">
-            var x_rate;
-            var btcrate;
+            //renamed from x_rate
+            var btc_x_rate; var btcrate;
+            var eth_x_rate; var eth_rate;
             function defer(method, condition) {
                 if (condition) {
                     method()
@@ -194,30 +231,55 @@
                     , 100);
                 }
             }
+            //TODO write x_rate_interal for each crypto OR make it take an arg
             function x_rate_interval() {
                 var interval = setInterval(function() {
                     btcrate = undefined;
-                    get_exchange_rate();
+                    // TODO LATER rewrite to support more currencies
+                    get_exchange_rate("BTC");
+                    //TODO LATER rewrite to support more currencies and tokens
+                    //TODO replace donationusd with donationFiat
                     if (document.getElementById("donationbtc").value > 0) {
                         if (document.getElementById("donationbtc").value.split('.').length > 1) {
-                            document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * x_rate).toFixed(document.getElementById("donationbtc").value.split('.')[1].length);
+                            document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * btc_x_rate).toFixed(document.getElementById("donationbtc").value.split('.')[1].length);
                         } else {
-                            document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * x_rate).toFixed(8);
+                            document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * btc_x_rate).toFixed(8);
                         }
                     }
-                    document.getElementById("donationusd").value = parseFloat(document.getElementById("donationbtc").value * (1 / x_rate)).toFixed(2);
+                    document.getElementById("donationusd").value = parseFloat(document.getElementById("donationbtc").value * (1 / btc_x_rate)).toFixed(2);
+                }, 5000);
+                return interval;
+            }
+            function x_rate_interval_new(token) {
+                var interval = setInterval(function() {
+                    get_exchange_rate(token);
+                    //TODO LATER rewrite to support more currencies and tokens
+                    //TODO replace donationusd with donationFiat
+                    if (token == "BTC") {
+                        if (document.getElementById("donationbtc").value > 0) {
+                            if (document.getElementById("donationbtc").value.split('.').length > 1) {
+                                document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * btc_x_rate).toFixed(document.getElementById("donationbtc").value.split('.')[1].length);
+                            } else {
+                                document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * btc_x_rate).toFixed(8);
+                            }
+                        }
+                        document.getElementById("donationusd").value = parseFloat(document.getElementById("donationbtc").value * (1 / btc_x_rate)).toFixed(2);
+                    } else if (token == "ETH") {
+                        //TODO add eth input update
+                    }
                 }, 5000);
                 return interval;
             }
             function set_x_rate() {
                 defer(function() {
-                    x_rate = 1 / btcrate;
-                }, (typeof (btcrate) != "undefined"));
+                    btc_x_rate = 1 / btcrate;
+                    //eth_x_rate = 1 / ethrate;
+                }, (typeof (btcrate) != "undefined")); //|| typeof (ethrate) != "undefined"
             }
-            function get_exchange_rate() {
+            function get_exchange_rate(token) {
                 $.ajax({
                     type: "GET",
-                    url: "https://blockchain.info/ticker?base=BTC",
+                    url: "https://blockchain.info/ticker?base=" + token,
                     data: {
                         format: 'json'
                     },
@@ -225,11 +287,25 @@
                         if (!response) {
                             return;
                         }
+                        // TODO rework example to use dynamic variables for token + _rate
+                        // const dynamicVariables = {};
+                        // const variableName = 'myVariable';
+                        // const value = 42;
+
+                        // // Set the variable
+                        // dynamicVariables[variableName] = value;
+
+                        // // Access the variable
+                        // console.log(dynamicVariables.myVariable); // Output: 42
+                        // console.log(dynamicVariables[variableName]); // Output: 42
                         btcrate = parseFloat(response.USD.last);
                         set_x_rate();
+
+                        //THIS SECTION AGAIN
                         if (document.getElementById("container").style.display == "none") {
                             loadMain();
                         }
+                        //TODO again dynamic vars, and create additional elements (and check if "rate" was used anywhere)
                         document.getElementById("rate").innerText = '$' + parseFloat(btcrate).toFixed(2);
                     }
                 });
@@ -240,10 +316,14 @@
             }
             var xint;
             document.addEventListener("DOMContentLoaded", () => {
-                bchain();
-                get_exchange_rate();
-                set_x_rate();
+                bchain();            
+                //TODO use a Global to keep track of which tokens are being used
+                get_exchange_rate('BTC')
+                set_x_rate()
                 xint = x_rate_interval();
+                //clearInterval(xint)
+
+                //update UI prices
                 document.getElementById("donationusd").addEventListener("input", () => {
                     document.getElementById("donationbtc").value = parseFloat(document.getElementById("donationusd").value * x_rate).toFixed(8);
                 }
@@ -252,11 +332,22 @@
                     document.getElementById("donationusd").value = parseFloat(document.getElementById("donationbtc").value * (1 / x_rate)).toFixed(2);
                 }
                 );
+
+                //THIS SECTION
+                // if (document.getElementById("container").style.display == "none") {
+                //     loadMain();
+                // }
+                // document.getElementById("rate").innerText = '$' + parseFloat(btcrate).toFixed(2); //change elem name to btc_rate
+                // //TODO repeat for other token_rate eg/ eth_rate
+                // //     document.getElementById("donationusd").value = parseFloat(document.getElementById("donationbtc").value * (1 / x_rate)).toFixed(2);
+                // // }
+                // // );
             }
             );
-            function send_donation() {
-                clearInterval(xint);
+            function send_donation(token) {
+                clearInterval(xint); //TODO clear all interval vars
                 document.getElementById("sendspan").firstChild.innerHTML = "Please send " + document.getElementById("donationbtc").value + " BTC to: " + "<b style=\"color: chartreuse;\" id=\"btcaddress\">bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt</b>";
+                //TODO ^^ or Please send ... ETH to ...
                 document.getElementById("container").style.display = "none";
                 document.body.style.cssText = "background-color: black; color: chartreuse;";
                 document.getElementById("loadingstage").style.cssText = "";
@@ -376,7 +467,10 @@
                             <div>
                                 <div class="blockchain-btn" data-address="bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt" data-shared="false">
                                     <div class="blockchain stage-begin">
-                                        <button onclick="send_donation();">&#10084;&#65039;DONATE &#10084;&#65039;</button>
+                                        <button onclick="send_donation('BTC');">&#10084;&#65039;DONATE BTC&#10084;&#65039;</button>
+                                    </div>
+                                    <div class="blockchain stage-begin">
+                                        <button onclick="send_donation('ETH');">&#10084;&#65039;DONATE ETH&#10084;&#65039;</button>
                                     </div>
                                 </div>
                             </div>
@@ -413,7 +507,11 @@
                 <div style="height: 50px;"></div>
                 <div id="sendspan" style="text-align: center;">
                     <span style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        Please send your donation to: <b style="color: chartreuse;" id="btcaddress">[[address]]</b>
+                        Please send your donation to:</span></br>
+                        <b style="color: chartreuse;" id="btcaddress">bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt</b></br>
+                        <b style="color: chartreuse;" id="ethaddress">bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt</b></br>
+                        <b style="color: chartreuse;" id="xmraddress">bc1qfhnrn0927zg7wjtg82ydcw5srv9ce088l685tsyc60grqly552pslkq4qt</b></br>
+
                     </span>
                 </div>
                 <div id="buttoncopy">

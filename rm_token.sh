@@ -1,0 +1,1 @@
+sed -i '/PATTERN/d' filename.txt
